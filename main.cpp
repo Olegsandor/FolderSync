@@ -3,12 +3,10 @@
 #include <fstream>
 #include <iostream>
 #include "foldSync.h"
+#include <chrono>
+#include <thread>
 
 using namespace std;
-
-#include <filesystem>
-
-using namespace filesystem;
 
 
 void readPathsFromFile(string cfgPath, vector<std::string>& paths)
@@ -24,13 +22,13 @@ void foldersSync(string cfgPath) {
 	vector<string> foldPaths;
 	int stillWanted = 1;
 	foldSync syncronizer;
-	while (stillWanted) 
+	while (stillWanted)
 	{
 		try {
 			stillWanted = 0;
 			readPathsFromFile(cfgPath, foldPaths);
 		}
-		catch (invalid_argument err) 
+		catch (invalid_argument err)
 		{
 			cout << err.what() << endl
 				<< "would you like to choose anoter?(y/n)" << endl;
@@ -50,7 +48,7 @@ void foldersSync(string cfgPath) {
 		catch (invalid_argument err)
 		{
 			cout << err.what() << endl
-			<< "would you like to choose anoter file?(y/n)" << endl;
+				<< "would you like to choose anoter file?(y/n)" << endl;
 			char i;
 			for (i = ' '; i != 'y' && i != 'n'; cin >> i);
 			if (i == 'y') {
@@ -64,16 +62,20 @@ void foldersSync(string cfgPath) {
 	cout << "The programm will syncronize folders from a file \"" << cfgPath << "\"" << endl;
 	for (auto i : foldPaths)
 		cout << i << endl;
-	cout << "Would you like to continue?(y/n)" << endl;
-	char i;
-	for (i = ' '; i != 'y' && i != 'n'; cin >> i);
-	stillWanted = (i == 'y') ? 1 : 0;
-	while (stillWanted) {
+	cout << "if you like to continue, enter delay between syncronizations in minutes(or 0 to do it once or -1 to exit): ";
+	int time;
+	cin >> time;
+	if (time == -1)
+		return;
+	if (!time){
 		syncronizer.sync();
-		cout << "Do you want to syncronize them once more?(y/n)" << endl;
-		char i;
-		for (i = ' '; i != 'y' && i != 'n'; cin >> i);
-		stillWanted = (i == 'y') ? 1 : 0;
+		return;
+	}
+	cout << "There is no way to stop the program except for ctrl + c for now" << endl;
+	while (true) {
+		syncronizer.sync();
+		cout << "Folders synced" << endl;
+		this_thread::sleep_for(chrono::minutes(time));
 	}
 }
 
